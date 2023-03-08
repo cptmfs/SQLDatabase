@@ -101,6 +101,10 @@
 --Tedarikçilerimin olduðu ülkelerdeki müþtreliremiz kimler  ?   // Mesela benim kendim eklemiþ olduðum KBIL þirketi türkiyede yer alýyor ve o þirket Suppliers'da yer almadýðý için gelmedi..
 --Select * From Customers where Country in ( Select Country from Suppliers)
 
+--Ürünler(Products) tablosunda fiyat bilgisi 100 ila 200 arasýnda olan ama ürün kategorisi 1,2,3 deðerlerinin dýþýnda olan kayýtlarý getiriniz...
+--Select * from Products where (UnitPrice between 100 and 200 ) and CategoryID not in (1,2,3)
+
+
 
 
 
