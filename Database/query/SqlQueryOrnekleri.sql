@@ -200,6 +200,66 @@
 --Select ProductName , UPPER(ProductName) as 'SONUC' From Products  -- Ürün Adýný Komple Büyük Harf'e çevirir..
 --Select ProductName , LOWER(ProductName) as 'SONUC' From Products  -- Ürün Adýný Komple Küçük Harf'e çevirir..
 
--- Örnek : ProductName'in sadece ilk karakterini küçük yap..
+-- Örnek : ProductName'in sadece ilk karakteri büyük diðer karakterleri küçük yap..
 
-Select ProductName,substring(ProductName,1,1) + Lower(SUBSTRING(ProductName,2,50)) from Products 
+--Select ProductName,substring(ProductName,1,1) + Lower(SUBSTRING(ProductName,2,50)) from Products  
+
+
+--						TRIM / LTRIM / RTRIM FONKSÝYONU					--
+
+-- TRIM = Tüm Bosluklarý Siler    LTRIM = Soldaki Bosluklarý Siler   RTRIM = Sagdaki Bosluklarý Siler
+--Select TRIM('    a      MFS   a   ' )
+
+
+--						CONVERT FONKSÝYONU					--
+
+--Select Convert(int,50) * 20  -- String gelen deðeri iþleme sokmak istiyorsak int'e çevirip sonra iþleme sokmak için..
+
+
+--						CAST FONKSÝYONU					--
+
+
+--Select Cast('100'as int) /  50    -- Direk Ýnte Çevirir gelen deðeri
+
+
+--						CONCAT FONKSÝYONU					--
+-- String Birleþtirme..
+
+--Select CONCAT ('Ben ','Muhammed Ferit Simsek ','Yazýlým Ogrencisiyim') as 'Kisisel Bilgiler',
+
+
+--						CASE FONKSÝYONU					--
+-- Bir koþul atayýp onun oluþtuðunda yeni tabloya yazýlacak þeyleri belirtiyoruz..
+
+--Select OrderID,Quantity ,
+--case 
+--when Quantity>30 then 'Bu deðer 30 dan büyük' 
+--when Quantity=30 then 'bu deðer 30' 
+--else 'bu deðer 30 dan küçük' 
+--end as 'Deðer Kontrol' from [order details]
+
+
+--						SUM FONKSÝYONU					--
+
+--Select Sum(Quantity) from [Order Details]  -- OrderDetails'deki Quantitylerin toplamý
+--Select Sum(UnitPrice) from [Order Details]   -- OrderDetails'deki Fiyatlarýn toplamý
+
+--Select [Order Details].ProductID, Products.ProductName, 
+--Max([Order Details].UnitPrice)
+--from [Order Details]  inner join Products
+--ON [Order Details].ProductId=Products.ProductId 
+--Group By  [Order Details].ProductID, Products.ProductName, 
+--[Order Details].UnitPrice
+--having [Order Details].UnitPrice=MAX([Order Details].UnitPrice)  
+
+Select Top 1 [Order Details].ProductID,Products.ProductName,[Order Details].UnitPrice
+from [Order Details] inner join Products on Products.ProductID=[Order Details].ProductID 
+group by [Order Details].ProductID, [Order Details].UnitPrice,Products.ProductName
+having [Order Details].UnitPrice=Max([Order Details].UnitPrice)
+order by [Order Details].UnitPrice desc
+
+
+
+
+
+
