@@ -252,14 +252,120 @@
 --[Order Details].UnitPrice
 --having [Order Details].UnitPrice=MAX([Order Details].UnitPrice)  
 
-Select Top 1 [Order Details].ProductID,Products.ProductName,[Order Details].UnitPrice
-from [Order Details] inner join Products on Products.ProductID=[Order Details].ProductID 
-group by [Order Details].ProductID, [Order Details].UnitPrice,Products.ProductName
-having [Order Details].UnitPrice=Max([Order Details].UnitPrice)
-order by [Order Details].UnitPrice desc
+--Select Top 1 [Order Details].ProductID,Products.ProductName,[Order Details].UnitPrice
+--from [Order Details] inner join Products on Products.ProductID=[Order Details].ProductID 
+--group by [Order Details].ProductID, [Order Details].UnitPrice,Products.ProductName
+--having [Order Details].UnitPrice=Max([Order Details].UnitPrice)
+--order by [Order Details].UnitPrice desc
+
+
+--						DECLARE FONKSÝYONU					--
+-- Sql Deðiþken tanýmlama komutudur..
+
+
+--DECLARE @sayi1 int -- deðiþkenin adý sayi1 , tipi de int
+--DECLARE @ad varchar(15) -- deðiþkenin adý ad , tipi de varchar
+--DECLARE @soyad varchar(25) -- deðiþkenin adý ad , tipi de varchar
+--DECLARE @yas int 
+
+
+--SET @sayi1=5
+--PRINT 'Girdiðiniz Sayý : ' + CONVERT (nvarchar(20),@sayi1)
+--SET @ad='Muhammed Ferit'  SET @soyad='Simsek' SET @yas=29
+--SELECT @ad as Ad,@soyad as Soyad , @yas as Yas
+
+-- FirstName , LastName ve Title isminde degiskenler tanýmlanýyor ve deðerleri tablodan alýnýp atanýyor ve ekrana yazdýrýlýyor..
+
+--DECLARE @FirstName nvarchar(20) , @LastName nvarchar(20) , @Title nvarchar(25)
+--Select FirstName,LastName,Title From Employees where EmployeeID=7
+--Select @FirstName = FirstName ,@LastName= LastName , @Title= Title from Employees where EmployeeID=7;
+--print 'FirstName Deðeri:'; print @FirstName;
+--print 'LastName Deðeri:'; print @LastName;
+--print 'Ünvan :' print @Title
+
+-- Workout : Exotic Liquids þirketinin uzun Adresini ekrana yazýnýz.. Uzun adres = adres + þehir + ülke
+
+--DECLARE @Adres nvarchar(30) , @Ulke nvarchar(20) , @Sehir nvarchar(20) , @Sirket nvarchar(20) 
+--select Address,Country,City,CompanyName from Suppliers where SupplierID=1
+--Select @Adres=Address , @Ulke=Country , @Sehir=City , @Sirket=CompanyName from Suppliers where SupplierID=1
+--print Concat( @Sirket ,' Sirketinin Acik  Adresi : ',@Adres,' ',@Sehir,'/',@Ulke)
+
+--Diðer bir yol.
+
+--Declare @SirketAdý nvarchar(30) , @AcikAdres nvarchar(50)
+--Select @SirketAdý=CompanyName , @AcikAdres= Address+ ' ' +City+'/'+Country from Suppliers where SupplierID=1
+--print @SirketAdý + ' Sirketinin Acik Adresi : ' + @AcikAdres 
 
 
 
+--						FONKSÝYONLAR					--
+
+--Create Function fonksiyon_adi
+
+---- Parametrelerin Eklendiði Yer
+--(@param1 veritürü, @param2 veritürü)
+--Returns geri_dönecek_deðerin_veritürü
+--AS
+--Begin 
+---- Önce geri dönecek deðer tanýmlanýr.
+--Declare @donen veritürü
+----Sql ifadeleri dönen parametreye deðer aktarýmý gibi iþlemler
+--return @donen
+--end
+
+
+-- Örnek : Verilen bir tarih bilgisine göre kisinin yasýný hesaplayan bir fonksiyon (Scalar function) tanýmlayalým..
+
+--Create Function funcYasHesapla (@tarih Date) 
+--returns int 
+--as begin 
+--	declare @yas int  
+--	set @yas= YEAR(GETDATE())-YEAR(@tarih)     -- Year ve GetDate sistem fonksiyonlarý
+--	return @yas  
+--end
+
+-- Hadi Fonksiyonumuzu Kullanalým.. 
+
+--Select dbo.funcYasHesapla('06.06.1993') as 'Yas'
+
+-- Örnek Çalýþma --
+-- Kullanýlacak tablolar Employess,Orders,Order Details
+--Ýstenen ; EmployeeID deðeri verilen bir personelin ne kadar satýþ yaptýðýný listeleyen fonksiyonu hazýrlayýnýz..
+
+
+--Create function funcSatisHesapla(@employeeId int) 
+--returns int
+--as begin
+--declare @SatisMiktari int
+--Select @SatisMiktari=Sum(od.Quantity) from  Employees Emps  
+--inner join Orders o on Emps.EmployeeID=o.EmployeeID   
+--inner join [Order Details] od on o.OrderID=od.OrderID  
+--where Emps.EmployeeID=@employeeId group by Emps.EmployeeID
+--return @SatisMiktari
+--end
+
+-- Fonksiyonu Kullanma Aþamasý..
+--Select dbo.funcSatisHesapla(3) as 'TOPLAM SATIS'
+
+-- Örnek : Deðeri(ID) verilmiþ olan bir çalýþanýn hizmet verdiði bölge tanýmýný getiren bir fonksiyon yazýnýz..
+-- Çýkýþ þöyle olacak Çalýþanýn ID'si,adý,soyadý,bölge ad
+
+--Select e.EmployeeID,FirstName,LastName,r.RegionDescription from Employees e inner join EmployeeTerritories et on e.EmployeeID=et.EmployeeID 
+--inner join Territories t on et.TerritoryID=t.TerritoryID inner join Region r on t.RegionID=r.RegionID where e.EmployeeID=3
+
+
+--Create function funcBolgeGetir(@calisanID int)
+--returns int 
+--as begin
+--declare @BolgeBilgi int
+--Select @BolgeBilgi = r.RegionDescription from Employees e inner join EmployeeTerritories et on e.EmployeeID=et.EmployeeID 
+--inner join Territories t on et.TerritoryID=t.TerritoryID inner join Region r on t.RegionID=r.RegionID where e.EmployeeID=3
+--return @BolgeBilgi
+--end
+
+
+
+Select EmployeeID,FirstName,LastName,dbo.funcBolgeGetir6(3) as 'Bölge' from Employees
 
 
 
