@@ -370,7 +370,49 @@
 
 
 
-Select EmployeeID,FirstName,LastName,dbo.funcBolgeGetir6(3) as 'Bölge' from Employees where EmployeeID=3
+--Select EmployeeID,FirstName,LastName,dbo.funcBolgeGetir6(3) as 'Bölge' from Employees where EmployeeID=3
 
 
 
+--Create Trigger StokAzalt
+--on tblUrunler
+--after delete
+--as 
+--Update tblStok set Adet=Adet-1
+
+--Create Trigger StokArttir 
+--on tblUrunler 
+--after insert
+--as
+--Update tblStok set Adet=Adet+1
+
+--Create Procedure SatislarListesi
+--as
+--Select ID,UrunAd,Adet,Ad+' '+Soyad as 'Ad Soyad',Fiyat,Toplam,Tarih from tblSatislar
+--inner join tblUrunler on tblSatislar.Urun=tblUrunler.UrunID
+--inner join tblMusteri on tblSatislar.Musteri=tblMusteri.MusteriID
+
+--Create Procedure UrunGetir(@ID int)
+--as
+--select * from tblUrunler where UrunID=@ID
+
+
+--Create Trigger Stok_Ekle
+--on tblUrunler
+--after insert 
+--as
+--Declare @StokSayi int
+--Select @StokSayi=Stok from inserted -- inserted yeni eklenen demek..
+--Update tblStoklar set Adet=Adet+@StokSayi
+
+--ALTER Procedure [dbo].[SatislarListesi]
+--as
+--Select ID,Urun,Musteri,Adet,Fiyat,Toplam,Tarih,UrunAd,Ad+' '+Soyad as 'Müsteri Ad Soyad' from tblSatislar
+--inner join tblUrunler on tblSatislar.Urun=tblUrunler.UrunID
+--inner join tblMusteri on tblSatislar.Musteri=tblMusteri.MusteriID
+
+
+--Execute UrunGetir 4
+
+
+--Select * from View_1
