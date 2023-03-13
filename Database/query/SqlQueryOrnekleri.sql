@@ -328,91 +328,86 @@
 
 --Select dbo.funcYasHesapla('06.06.1993') as 'Yas'
 
--- Örnek Çalýþma --
--- Kullanýlacak tablolar Employess,Orders,Order Details
---Ýstenen ; EmployeeID deðeri verilen bir personelin ne kadar satýþ yaptýðýný listeleyen fonksiyonu hazýrlayýnýz..
+--						VÝEW					--
+
+--Create view viewEmployees as select * from Employees
+
+--select * from viewEmployees
+
+--Create view viewCustomerDetails as 
+--Select CustomerID,CompanyName,ContactName,City,Country from Customers
+
+--select * from viewCustomerDetails
+ 
+
+ --select * from viewOrderDetails
 
 
---Create function funcSatisHesapla(@employeeId int) 
---returns int
---as begin
---declare @SatisMiktari int
---Select @SatisMiktari=Sum(od.Quantity) from  Employees Emps  
---inner join Orders o on Emps.EmployeeID=o.EmployeeID   
---inner join [Order Details] od on o.OrderID=od.OrderID  
---where Emps.EmployeeID=@employeeId group by Emps.EmployeeID
---return @SatisMiktari
---end
+-- Soru : Notrhwind veri tabanýndaki "Customers" tablosunda CustomerID deðerinin ilk harfi 'A','D','W' ile baþlayana müþteri 
+--kayýtlarýndan sadece 'Mexico' ve  'Germany' deki olanlarýn CompanyName, ContactName ve Phone bilgilerini ülkeye artan sýralý 
+--listeleyen 'CountryContactNames' isimle view'i yaratýnýz.
 
--- Fonksiyonu Kullanma Aþamasý..
---Select dbo.funcSatisHesapla(3) as 'TOPLAM SATIS'
+ --Create view countryContactNames as  Select Top(50) ContactName,Phone,CompanyName From Customers 
+ --where (CustomerID like 'A%' or CustomerID like  'D%' or CustomerID  like 'W%')  
+ --and (Country='Mexico' or Country ='Germany') order by Country
 
--- Örnek : Deðeri(ID) verilmiþ olan bir çalýþanýn hizmet verdiði bölge tanýmýný getiren bir fonksiyon yazýnýz..
--- Çýkýþ þöyle olacak Çalýþanýn ID'si,adý,soyadý,bölge ad
+ -- Diðer Yöntem : 
+ --Create view countryContactNames2 as Select Top 1000 CompanyName,ContactName,Phone,Country from Customers
+ --where SUBSTRING(CustomerID,1,1) IN ('A','D','W') and (Country='Germany' or Country='Mexico') Order by Country
 
---Select e.EmployeeID,FirstName,LastName,r.RegionDescription from Employees e inner join EmployeeTerritories et on e.EmployeeID=et.EmployeeID 
---inner join Territories t on et.TerritoryID=t.TerritoryID inner join Region r on t.RegionID=r.RegionID where e.EmployeeID=3
+ --Select * from countryContactNames
 
-
---Create function funcBolgeGetir6(@calisanID int)
---returns varchar(50)
---as begin
---declare @BolgeBilgi varchar(50)
---Select @BolgeBilgi =r.RegionDescription from Employees e 
---inner join EmployeeTerritories et on e.EmployeeID=et.EmployeeID 
---inner join Territories t on et.TerritoryID=t.TerritoryID 
---inner join Region r on t.RegionID=r.RegionID 
---where e.EmployeeID=@calisanID 
---group by e.EmployeeID 
---return @BolgeBilgi
---end
+ --Select * from countryContactNames2
 
 
 
-
---Select EmployeeID,FirstName,LastName,dbo.funcBolgeGetir6(3) as 'Bölge' from Employees where EmployeeID=3
-
+ --						TRIGGERS					--
 
 
---Create Trigger StokAzalt
---on tblUrunler
---after delete
---as 
---Update tblStok set Adet=Adet-1
-
---Create Trigger StokArttir 
---on tblUrunler 
+-- Create Trigger trgUpdateStockQuantity 
+--on [Order Details]
 --after insert
 --as
---Update tblStok set Adet=Adet+1
+--begin
+----Order Details tablosu üzerine bir kayýt yazýlma durumu geldiðinde çalýþacak program satýrlarý..
+--declare @ProductID int, @Quantity smallint
+----temporary(geçici) tablodan ilgili alanlarý okuyorum.(ProductID,Quantity)
+--Select @ProductID=ProductID,@Quantity=Quantity From inserted
+----GÜncelleme öncesi Products tablosundaki UnitsInStock deðerini oku.
+--Select ProductID,ProductName,UnitsInStock from Products where ProductID=@ProductID   -- trigger dan önceki hali..
+---- Tabloyu yeni deðerle update etme.
+--Update Products
+--set UnitsInStock=UnitsInStock-@Quantity -- @ sipariþ gelen adedi tutuyor.
+--where ProductID=@ProductID
+----Güncellemeden sonra olusan yeni degeri oku..
+--Select ProductID,ProductName,UnitsInStock from Products where ProductID=@ProductID -- Ürünün son stok durumunu göster..
+--end
 
---Create Procedure SatislarListesi
---as
---Select ID,UrunAd,Adet,Ad+' '+Soyad as 'Ad Soyad',Fiyat,Toplam,Tarih from tblSatislar
---inner join tblUrunler on tblSatislar.Urun=tblUrunler.UrunID
---inner join tblMusteri on tblSatislar.Musteri=tblMusteri.MusteriID
+--Select * From [Order Details]
 
---Create Procedure UrunGetir(@ID int)
---as
---select * from tblUrunler where UrunID=@ID
+--Insert INTO [Order Details] (OrderID,ProductID,UnitPrice,Quantity,Discount) values (10501,1,18,5,0)
 
+-- Örnek :  Kirkland þehrinde oturan çalýþanýmýn yeni ev adresi Baðda Caddesi No:5 olsun , 
+-- bunu yapan trigger'ý hazýrlayýnýz.. trigger name : trigAddressChange olsun..
 
---Create Trigger Stok_Ekle
---on tblUrunler
---after insert 
---as
---Declare @StokSayi int
---Select @StokSayi=Stok from inserted -- inserted yeni eklenen demek..
---Update tblStoklar set Adet=Adet+@StokSayi
-
---ALTER Procedure [dbo].[SatislarListesi]
---as
---Select ID,Urun,Musteri,Adet,Fiyat,Toplam,Tarih,UrunAd,Ad+' '+Soyad as 'Müsteri Ad Soyad' from tblSatislar
---inner join tblUrunler on tblSatislar.Urun=tblUrunler.UrunID
---inner join tblMusteri on tblSatislar.Musteri=tblMusteri.MusteriID
+--Create Trigger trigAddressChange2
+--on Employees
+--after Update
+--as begin 
+--Declare @ID int,@adres nvarchar(60), @ulke nvarchar(20) , @sehir nvarchar(20)
+--set @adres='Bagdat Caddesi No:5'
+--set @ulke='Turkey'
+--set @sehir='Istanbul'
+--Select @ID=EmployeeID from inserted
+--Select EmployeeID,Address,Country,City from Employees where EmployeeID=@ID
+--Update Employees
+--set Address=@adres , Country=@ulke , City=@sehir where EmployeeID=@ID
+--Select EmployeeID,Address,Country,City from Employees where EmployeeID=@ID
+--end
 
 
---Execute UrunGetir 4
+--Select * From Employees
 
+--Update Employees set Title='Türkiye Ceosu' where City='Kirkland'
 
---Select * from View_1
+--Update Employees set Title='Türkiye Ceosu' where City='Redmond'
