@@ -411,3 +411,168 @@
 --Update Employees set Title='Türkiye Ceosu' where City='Kirkland'
 
 --Update Employees set Title='Türkiye Ceosu' where City='Redmond'
+
+
+
+ --						SUB QUERY					--
+
+ -- Örnek  : Adý Michael ve Laura olanlar ile ayný þehirde yaþayan çalýþanlarýn bilgilerini getiriniz..
+
+ --Select * From Employees where City IN (Select City From Employees where FirstName IN ('Laura' , 'Michael'))
+
+  -- Örnek 2 : Ürün ortalama fiyatýnýn altýnda fiyata sahip ürünlerin adý ve fiyatýný listeleyen sorguyu yazýnýz..
+
+  --Select ProductName,UnitPrice from Products where UnitPrice <(Select AVG(UnitPrice) from Products)
+
+ --						STORAGE PROCEDURE					--
+
+ -- Örnek : Customers tablosundaki þehir bilgerinin adedi azalacak þekilde City,Adet þeklinde listeleyen bir Sp oluþturunuz.. Þehir Adý , Adet
+
+ --Create Procedure spCityList
+ --as begin
+ --Select City,COUNT(City) as Adet from Customers group by City order by Adet desc
+ --end
+
+ -- Storage Procedure'i çalýþtýrma ..
+ --Execute spCityList
+
+ -- Örnek 2 : Orders tablosundan CustomerID'si verilen müþteriye ait sipariþleri listeleyen SP yi hazýrlayýnýz..
+
+ --Create Procedure spCustomerOrders (@CustomerID nchar(5))
+ --as begin
+ --Select * from Orders where CustomerID=@CustomerID
+ --end
+
+
+  -- Storage Procedure'i çalýþtýrma ..
+ --Execute spCustomerOrders VINET
+
+ -- Örnek 3 : Order tablosundan CustomerID'si(ilk Harf) verilen müþteriye ait sipariþlerin numarasýný, sipariþ tarihini ve 
+ -- bunlara ek olarak müþteri detaylarýný (CompanyName,Address,City,Country) listeleyen Sp yi Hazýrlayýnýz..
+
+ --Create Procedure spCustomerOrderDetails (@CustomerID nchar(5))
+ --as begin
+ --Select OrderID,OrderDate,c.CompanyName,c.Address,c.City,c.Country,c.CustomerID from Orders o Inner join Customers c on c.CustomerID=o.CustomerID where Substring(o.CustomerID,1,1)=@CustomerID
+ --end
+
+ --EXEC spCustomerOrderDetails  W
+
+
+
+  --						STORAGE PROCEDURE IF / ELSSE					--
+
+
+  -- Örnek : Ülkelere göre çok basit olarak o ülkede tedarikçi varmý yokmu kontrol edecek . Ýki adet parametre alarak yapacak bu iþi.
+
+ -- Create Procedure spSupplierByCountry 
+ -- (
+ -- @Country1 nvarchar(20) ,
+ -- @Country2 nvarchar(20)
+ -- )
+ -- as begin
+	--IF @Country1 IS NOT NULL
+	--	BEGIN -- Country1 parametresi dolu gelmiþse aþaðýyý çalýþtýr..
+	--	Select * From Suppliers where Country=@Country1
+	--	PRINT '1. Sonuç Setindeki Tedarikçiler : ' + @Country1 + ' Ülkesinde Bulunuyorlar..'
+	--	END
+	--IF @Country2 IS NOT NULL
+	--	BEGIN
+	--	Select * From Suppliers where Country=@Country2
+	--	PRINT '2. Sonuç Setindeki Tedarikçiler : ' + @Country2 + ' Ülkesinde Bulunuyorlar..'
+	--	END
+ -- end
+
+ --Execute spSupplierByCountry Germany,UK
+
+   --						STORAGE PROCEDURE IF EXISTS / NOT EXISTS					--
+
+-- Örnek : 
+--IF NOT EXISTS(Select * from Suppliers where Country='USA')
+--BEGIN
+--PRINT 'Amerika da yerleþik þirketler var'
+--END
+--ELSE
+--BEGIN
+--PRINT 'Amerika da hiç tedarikçimiz yok'
+--END
+
+   --						STORAGE PROCEDURE WHILE					--
+
+
+   -- Örnek : 1 den 10 a kadar olan sayýlarý ekrana yazdýr ve bu sayýlarýn son toplamýnýda yaz 
+
+--Create Procedure [dbo].[spCounter] as 
+--declare @counter int=1 , @toplam int=0;
+--while @counter<=10
+--begin
+--print @counter; -- Counter deðiþkeninin o deðerini yazdýr.
+--set @toplam= @toplam+@counter
+--set @counter=@counter+1; -- Counter'ý 1 arttýr ve devam et..
+--end
+--print 'TOPLAM : '+ Convert (nvarchar (20),@toplam)
+
+
+--EXEC spCounter
+
+-- Örnek 2 : Olayda bir bölme iþlemi var . Hata olabilir düþüncesiyle bu hesaplama/iþlem kýsmýný bir try catch bloklarý arasýna almak
+--yoluyla burdaki hatalarýn neler oldugunu gorebiliriz..
+
+--Create Procedure spDivide
+--(@a decimal,@b decimal)
+--as begin
+--declare @c decimal
+--begin try -- aþaðýdaki bolumu dener olmuyorsa c deðeri dýþa gönderilmiþ olsun.
+--		set @c = @a /@b;
+--		PRINT 'Sonuç = ' + Convert(nvarchar(10),@c) 
+--	  end try
+--	  begin catch
+--	  Select 
+--	  ERROR_NUMBER() AS ErrorNumber, -- Oluþan hatanýn numarasý/kodu
+--	  ERROR_SEVERITY() AS ErrorSeverity, -- Tehlike seviyesi
+--	  ERROR_STATE() AS ErrorState, -- Hata durumu
+--	  ERROR_PROCEDURE() AS ErrorProcedure, -- Hangi sp de verdi bu hatayý
+--	  ERROR_LINE() AS ErrorLine, -- Hatanýn gerçekleþtiði satýr no 
+--	  ERROR_MESSAGE() As ErrorMessage; -- Hatanýn detaylý mesajý
+--	  end catch
+--end
+
+--Exec spDivide 10,0
+
+
+   --						CURSOR					--
+
+-- Employees  tablosundaki  FirstName , LastName , Title alanlarýný aralarýnda bir boþluk olacak þekilde birleþtiren sp yi hazýrlayýnýz..
+
+--Create Procedure spEmployeeReport
+--as begin
+----Deðiþkenleri hazýrlýyorum..
+--declare @FirstName nvarchar(max), @LastName nvarchar(MAX) , @Title nvarchar(MAX)
+---- Öncelikle Employee tablomu baþtan sonra iþlemden geçirebilmek için aslýnda bir kopyasýný bellekte Cursor yardýmýyla olusturucam.
+---- Aslýnda Cursor'larda bir deðiþken
+
+--Declare curEmployees CURSOR -- Cursor oluþturuluyor.
+--For -- Ne için oluþturulacak bu Cursor
+--	Select FirstName,LastName,Title from Employees -- Curson'un temsil edeceði veriler
+--	OPEN curEmployees -- Cursor açýlýyor. Default olarak ileri yönlü
+--	-- Þimdi bu Cursor'un 1. kaydýna ulaþmak lazýmki okumaya baþlasýn.. Ayný andada okudugu veriyi deðiþkenlere aktaralým..
+--	 -- FETCH komutu okuyor/almaya baþlýyor ve deðiþkenlerimize yerleþtiriyor..
+--	FETCH NEXT FROM curEmployees INTO @FirstName,@LastName,@Title 
+--	--bir tane sistem deðiþkeni var -> Adý @@FETCH_STATUS "Okuma iþlemini doðru yaptýmmý kontrolü için kullanýlýr.."
+--	--Ýþlem baþarýlý ise @@FETCH_STATUS deðeri 0(Sýfýrdýr) ve Ýþlem baþarýlýdýr..
+--	--Bir sonraki kayýtta mevcuttur.
+--	WHILE @@FETCH_STATUS=0 -- Yani kayýt varsa gel iþlemini yap
+--	BEGIN
+
+--	PRINT CONCAT(@FirstName,' ',@LastName,' ',@Title)
+--	-- Sýradaki satýra geçmem lazým o yüzden
+--	FETCH NEXT FROM curEmployees INTO @FirstName,@LastName,@Title  -- Bir Sonraki Kayýdý Okuma ve Deðiþkenlere Atama..
+--	END
+--	-- Kayýtlar bitti. Þuana kadar ekrana basýldý birþeyler..
+--	-- 
+--	CLOSE curEmployees -- Close etsem dahi hala bellekte o yüzden bellekten atmamýz lazým
+--	DEALLOCATE curEmployees
+
+--END
+
+Exec spEmployeeReport
+
